@@ -11,39 +11,29 @@ KerasModelEvaluator::KerasModelEvaluator(const std::string& keras_model_filename
     import_array();
 
     const std::string python_wrapper = R"(
-
 # Set number of available cores to 1
 import os
 os.environ['OMP_NUM_THREADS'] = '1'
-
 import sys
-
 _stderr = sys.stderr
 sys.stderr = sys.stdout
 import keras
 sys.stderr.flush()
 sys.stderr = _stderr
 del _stderr
-
 import numpy as np
-
 class KerasModelEvaluator(object):
-
     def __init__(self, filename):
         print("Loading Keras model from %r" % filename)
         self.model = keras.models.load_model(filename)
-
     def evaluate_single_event(self, values):
         """
         Evaluate the model on a single event
-
         Parameters:
           values: list of inputs
-
         Returns:
           The model output
         """
-
         predictions = self.model.predict_on_batch(values)
         return predictions
 )";
@@ -122,3 +112,4 @@ void KerasModelEvaluator::print_python_exception() const {
 
     std::cout << std::endl;
 }
+

@@ -4,43 +4,6 @@ scriptDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe
 sys.path.append(scriptDir)
 from basePlotter import *
 
-###### Old Reweighting -- template-based #########
-#sample_weights = {}
-
-#headers.append("reweight_v1tov3.h")
-
-## For v1->v3 reweighting
-#code_before_loop += """
-#getBenchmarkReweighter("/home/fynu/sbrochet/scratch/Framework/CMSSW_7_6_5/src/cp3_llbb/HHTools/scripts/", 0, 11, true, "cluster_NUM_v1_to_v3_weights.root", "NUM");
-#"""
-#for node in range(1, 13):
-#    sample_weights[ "cluster_node_" + str(node) ] = "getBenchmarkReweighter().getWeight({}-1, hh_gen_mHH, hh_gen_costhetastar)".format(node)
-
-## For v1->1507 reweighting
-#code_before_loop += """
-#getBenchmarkReweighter("/home/fynu/swertz/scratch/CMSSW_7_6_3_patch2/src/cp3_llbb/HHTools/scripts/weights_v1_1507_points.root", 0, 1506, false, "point_NUM_weights_unfolded", "NUM");
-#"""
-#for node in range(0, 1507):
-#    if node in [324, 910, 985, 990]: continue # Skip dummy Xanda
-#    sample_weights[ "point_" + str(node) ] = "getBenchmarkReweighter().getWeight({}, hh_gen_mHH, hh_gen_costhetastar)".format(node)
-
-## For v1->v1 checks:
-#code_before_loop += """
-#getBenchmarkReweighter("/home/fynu/swertz/scratch/CMSSW_7_6_3_patch2/src/cp3_llbb/HHTools/scripts/", 2, 13, true, "cluster_NUM_v1_to_v3_weights.root", "NUM");
-#"""
-#for node in range(2, 14):
-#    sample_weights[ "cluster_node_rwgt_" + str(node) ] = "getBenchmarkReweighter().getWeight({}, hh_gen_mHH, hh_gen_costhetastar)".format(node)
-
-### BM to MV term reweighting
-##operators_MV = ["OtG", "Otphi", "O6", "OH"]
-##rwgt_base = [ "SM", "box" ] + range(2, 13)
-##for base, base_name in enumerate(rwgt_base):
-##    for i, op1 in enumerate(operators_MV):
-##        sample_weights["base_" + base_name + "_SM_" + op1] = "getHHEFTReweighter().getMVTermME(hh_gen_H1, hh_gen_H2, -1, {}, event_alpha_QCD)/getHHEFTReweighter().getBenchmarkME(hh_gen_H1, hh_gen_H2, {}, event_alpha_QCD)".format(i, base)
-##        for j, op2 in enumerate(operators_MV):
-##            if i < j: continue
-##            sample_weights["base_" + base_name + "_" + op1 + "_" + op2] = "getHHEFTReweighter().getMVTermME(hh_gen_H1, hh_gen_H2, {}, {}, event_alpha_QCD)/getHHEFTReweighter().getBenchmarkME(hh_gen_H1, hh_gen_H2, {}, event_alpha_QCD)".format(i, j, base)
-
 ##### Some helper functions #####
 
 def check_overlap(lst):
@@ -84,21 +47,14 @@ for_signal = (config['sample_type'] == 'Signal')
 check_overlap([for_data, for_MC, for_signal])
 
 use_syst = get_cfg('syst')
-syst_split_jec = get_cfg('syst_split_jec', False)
-syst_only_jec = get_cfg('syst_only_jec', False)
-syst_split_pdf = get_cfg('syst_split_pdf', False)
 
-lljj_categories = get_cfg('lljj_categories', ['MuMu', 'MuEl', 'ElEl'])
-llbb_categories = get_cfg('llbb_categories', ['MuMu', 'MuEl', 'ElEl'])
-lljj_stages = get_cfg('lljj_stages', ['no_cut', 'mll_cut'])
-llbb_stages = get_cfg('llbb_stages', ['no_cut', 'mll_cut'])
+lljj_categories = get_cfg('lljj_categories', ['MuMu', 'ElEl'])
+llbb_categories = get_cfg('llbb_categories', ['MuMu', 'ElEl'])
+# USE ONLY THE CUT TO ISOLATE THE Z PEAK 
+lljj_stages = get_cfg('lljj_stages', ['no_cut', 'mll_peak'])
+llbb_stages = get_cfg('llbb_stages', ['no_cut', 'mll_peak'])
 lljj_plot_families = get_cfg('lljj_plots', [])
 llbb_plot_families = get_cfg('llbb_plots', [])
-skim_MuEl_stages = get_cfg('skim_MuEl_stages', False) # MuEl category: do only only "mll_cut" for llbb
-
-resonant_signal_grid = get_cfg('resonant_signal_grid', [])
-nonresonant_signal_grid = get_cfg('nonresonant_signal_grid', [])
-nonresonant_signal_grid = [ tuple(point) for point in nonresonant_signal_grid ] # For some fucking reason
 
 # Ask Factories to regroup "similar" plots
 optimize_plots = True
@@ -117,56 +73,31 @@ libraries = default_libraries()
 library_directories = default_library_directories()
 sources = default_sources(scriptDir)
 
-####### Reweighting -- ME-based -- only for signal #########
-if for_signal:
-    training_grid_reweighter = GridReweighting(scriptDir)
-    
-    code_before_loop += training_grid_reweighter.before_loop()
-    code_in_loop += training_grid_reweighter.in_loop()
-    code_after_loop += training_grid_reweighter.after_loop()
-    include_directories += training_grid_reweighter.include_dirs()
-    headers += training_grid_reweighter.headers()
-    library_directories += training_grid_reweighter.library_dirs()
-    libraries += training_grid_reweighter.libraries()
-    sources += training_grid_reweighter.sources()
-    
-    sample_weights["training_grid"] = training_grid_reweighter.sample_weight()
-
 ######### Plot configuration ###########
 
-#### lljj 
-weights_lljj = ['trigeff', 'llidiso', 'pu']
+#### lljj
+# THE ONLY WEIGHT I'M CONSIDERING IS THE TRIGGER EFFICIENCY
+weights_lljj = ['trigeff']
 
 plots_lljj = []
 if "basic" in lljj_plot_families:
-    plots_lljj += ["mjj", "basic", "nn_inputs", "dy_bdt_inputs"]
+    plots_lljj += ["mjj"]
 if "other" in lljj_plot_families:
     plots_lljj += ["other"]
-if "dy_bdt" in lljj_plot_families:
-    plots_lljj += ["dy_rwgt_bdt"]
-if "dy_bdt_flavour" in lljj_plot_families:
-    plots_lljj += ["dy_rwgt_bdt_flavour"]
 if "btag_efficiencies" in lljj_plot_families:
     plots_lljj += ["btag_efficiency_2d"]
-if "weights" in lljj_plot_families:
-    plots_lljj += ["llidisoWeight", "trigeffWeight", "puWeight", "DYNobtagToBTagMWeight"]
 
 #### llbb
-weights_llbb = ['trigeff', 'llidiso', 'pu', 'jjbtag_heavy', 'jjbtag_light']
+# CONDISERING ONLY THE TRIGGER EFFICIENCY
+weights_llbb = ['trigeff']
 
 plots_llbb = []
 if "basic" in llbb_plot_families:
-    plots_llbb += ["mjj", "basic", "nn_inputs", "dy_bdt_inputs"]
+    plots_llbb += ["mjj"]
 if "other" in llbb_plot_families:
     plots_llbb += ["other"]
-if "dy_bdt" in llbb_plot_families:
-    plots_llbb += ["dy_rwgt_bdt"]
-if "nn" in llbb_plot_families:
-    plots_llbb += ["resonant_nnoutput", "nonresonant_nnoutput"]
-if "mjj_vs_nn" in llbb_plot_families:
-    plots_llbb += ["mjj_vs_resonant_nnoutput", "mjj_vs_nonresonant_nnoutput"]
 if "weights" in llbb_plot_families:
-    plots_llbb += ["llidisoWeight", "trigeffWeight", "puWeight", "jjbtagWeight", "DYNobtagToBTagMWeight"]
+    plots_llbb += ["trigeffWeight"]
 
 # No weights for data!
 if for_data:
@@ -278,19 +209,6 @@ def allowed_systematics_lljj(syst):
         return False
     return True
 
-def allowed_systematics_lljj_dy_reweighting(syst):
-    if syst == "nominal":
-        return True
-    # Both MC and Data: only a subset of systematics
-    for _s in ["jec", "jer", "jjbtaglight", "jjbtagheavy", "pu", "dyStat", "dyScaleUncorr"]:
-        if _s in syst:
-            return True
-    # MC: also all others
-    if for_MC:
-        return True
-    # Data: nothing else
-    return False
-
 
 #### Generate plot list #####
 for systematicType in systematics.keys():
@@ -309,10 +227,8 @@ for systematicType in systematics.keys():
  
             for stage in llbb_stages:
                 this_categories = llbb_categories[:]
-                if skim_MuEl_stages and stage != "mll_cut" and "MuEl" in this_categories:
-                    this_categories.remove("MuEl")
-                
-                plots.extend(basePlotter_llbb.generatePlots(this_categories, stage, systematic=systematic, weights=weights_llbb, requested_plots=plots_llbb, resonant_signal_grid=resonant_signal_grid, nonresonant_signal_grid=nonresonant_signal_grid, skimSignal2D=for_signal))
+
+                plots.extend(basePlotter_llbb.generatePlots(this_categories, stage, weights=weights_llbb, requested_plots=plots_llbb))
 
         # Signal: only do llbb!
         if for_signal:
@@ -330,16 +246,5 @@ for systematicType in systematics.keys():
                 plots.extend(basePlotter_lljj.generatePlots(this_categories, stage, systematic=systematic, weights=weights_lljj, requested_plots=plots_lljj))
 
 
-        ###### lljj stage + no btag -> btagM reweighting applied: use LLBB values! #####
-        if allowed_systematics_lljj_dy_reweighting(systematic):
-            
-            for stage in llbb_stages:
-                this_categories = llbb_categories[:]
-                if skim_MuEl_stages and stage != "mll_cut" and "MuEl" in this_categories:
-                    this_categories.remove("MuEl")
-                
-                plots.extend(basePlotter_lljj.generatePlots(this_categories, stage, systematic=systematic, weights=weights_lljj + ['dy_nobtag_to_btagM_BDT'], requested_plots=plots_llbb, extraString='_with_nobtag_to_btagM_reweighting', allowWeightedData=True, resonant_signal_grid=resonant_signal_grid, nonresonant_signal_grid=nonresonant_signal_grid, skimSignal2D=for_signal))
-        
-
-#for plot in plots:
-#    print plot
+for plot in plots:
+    print plot
