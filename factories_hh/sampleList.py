@@ -26,16 +26,16 @@ samples_dict = {}
 #    ]
 
 # DY NLO
-#samples_dict["DY_NLO"] = [
+samples_dict["DY_NLO"] = [
+     'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_Summer16MiniAODv2'
 #    'DYToLL_0J_13TeV-amcatnloFXFX-pythia8_extended_ext0_plus_ext1',
 #    'DYToLL_1J_13TeV-amcatnloFXFX-pythia8_extended_ext0_plus_ext1',
 #    'DYToLL_2J_13TeV-amcatnloFXFX-pythia8_extended_ext0_plus_ext1',
 #    'DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_extended_ext0_plus_ext1',
-#]
+]
 
 # DY LO
-samples_dict["DY_LO"] = [
-    'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8_Summer16MiniAODv2'
+#samples_dict["DY_LO"] = [
     # M-50 incl. merged
     # 'DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_extended',
     # M-50, binned HT > 100
@@ -50,7 +50,7 @@ samples_dict["DY_LO"] = [
     # 'DYJetsToLL_M-5to50_HT-200to400_TuneCUETP8M1_13TeV-madgraphMLM-pythia8', # 200-400 non-merged
     # 'DYJetsToLL_M-5to50_HT-400to600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8', # 400-600 non-merged
     # 'DYJetsToLL_M-5to50_HT-600toInf_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_extended', # 600-Inf merged
-    ]
+#    ]
 
 # Other backgrounds
 # VV

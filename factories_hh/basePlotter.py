@@ -53,7 +53,8 @@ class BasePlotter:
         self.baseObject = self.baseObjectName + "[0]"
         # For backwards compatibility with other tools:
         #CHANGE THE FOLLOWING LINE ACCORDINGLY!!
-        self.suffix = self.baseObjectName + "_hZAleptons_" + ("btagM_cmva" if btag else "nobtag_cmva")
+        #self.suffix = self.baseObjectName + "_hZAleptons_" + ("btagM_cmva" if btag else "nobtag_cmva")
+        self.suffix = self.baseObjectName + "" + ("btagM_cmva" if btag else "nobtag_cmva")
         self.btag = btag
         self.prefix = "hZA_"
         
@@ -98,21 +99,13 @@ class BasePlotter:
         self.dict_cat_cut =  {
             "ElEl": "({0}.isElEl && (runOnMC || (hZA_elel_fire_trigger_cut && runOnElEl)) && {1}.M() > 12)".format(self.baseObject, self.ll_str),
             "MuMu": "({0}.isMuMu && (runOnMC || (hZA_mumu_fire_trigger_cut && runOnMuMu)) && {1}.M() > 12)".format(self.baseObject, self.ll_str),
+            "MuEl": "(({0}.isElMu || {0}.isMuEl) && (runOnMC || ((hZA_muel_fire_trigger_cut || hZA_elmu_fire_trigger_cut) && runOnElMu)) && {1}.M() > 12)".format(self.baseObject, self.ll_str)
                         }
         self.dict_cat_cut["SF"] = "(" + self.dict_cat_cut["ElEl"] + "||" + self.dict_cat_cut["MuMu"] + ")"
 
         # Possible stages (selection)
-        mll_cut = "({0}.M() < 91 - 15)".format(self.ll_str)
-        inverted_mll_cut = "({0}.M() >= 91 - 15)".format(self.ll_str)
-        mll_peak = "(std::abs({0}.M() - 91) <= 15)".format(self.ll_str)
-        mll_above_peak = "({0}.M() > 91 + 15)".format(self.ll_str)
-
         self.dict_stage_cut = {
-               "no_cut": "", 
-               "mll_cut": mll_cut,
-               "inverted_mll_cut": inverted_mll_cut,
-               "mll_peak": mll_peak,
-               "mll_above_peak": mll_above_peak,
+               "no_cut": ""
             }
 
 
@@ -283,7 +276,7 @@ class BasePlotter:
             self.totalCut = self.joinCuts(cuts, catCut, self.dict_stage_cut[stage], *appendCuts)
             
             self.llFlav = cat
-            self.extraString = stage + extraString
+            self.extraString = ""
 
             self.mjj_plot.append({
                         'name': 'jj_M_%s_%s_%s%s'%(self.llFlav, self.suffix, self.extraString, self.systematicString),
@@ -293,12 +286,12 @@ class BasePlotter:
                 })
             
             # Plot to compute yields (ensure we have not over/under flow)
-            self.isElEl_plot.append({
-                        'name': 'isElEl_%s_%s_%s%s'%(self.llFlav, self.suffix, self.extraString, self.systematicString),
-                        'variable': "%s.isElEl"%self.baseObject,
-                        'plot_cut': self.totalCut,
-                        'binning': '(2, 0, 2)'
-                })
+            #self.isElEl_plot.append({
+            #            'name': 'isElEl_%s_%s_%s%s'%(self.llFlav, self.suffix, self.extraString, self.systematicString),
+            #            'variable': "%s.isElEl"%self.baseObject,
+            #            'plot_cut': self.totalCut,
+            #            'binning': '(2, 0, 2)'
+            #    })
             
             
             def get_jet_flavour_cut(flav, jet_idx):
@@ -312,12 +305,6 @@ class BasePlotter:
                     return "{jets}[{idx}].gen_{flav}".format(jets=self.jet_coll_str, idx=jet_idx, flav=flav)
             
             mll_plot_binning = '(75, 12, 252)'
-            if stage == "mll_cut":
-                mll_plot_binning = '(50, 12, 76)'
-            elif stage == "mll_peak":
-                mll_plot_binning = '(50, 76, 106)'
-            elif stage == "inverted_mll_cut":
-                mll_plot_binning = '(50, 76, 252)'
             
             # BASIC PLOTS
             self.basic_plot.extend([
@@ -346,11 +333,59 @@ class BasePlotter:
                         'binning': '(50, 20, 300)'
                 },
                 {
-                        'name': 'ht_%s_%s_%s%s'%(self.llFlav, self.suffix, self.extraString, self.systematicString),
-                        'variable': self.prefix + "HT",
+                        'name': 'lep1_eta_%s_%s_%s%s'%(self.llFlav, self.suffix, self.extraString, self.systematicString),
+                        'variable': self.lep1_str+".p4.Eta()",
                         'plot_cut': self.totalCut,
-                        'binning': '(50, 65, 1500)'
+                        'binning': '(50, -4, 4)'
                 },
+                {
+                        'name': 'lep2_eta_%s_%s_%s%s'%(self.llFlav, self.suffix, self.extraString, self.systematicString),
+                        'variable': self.lep2_str+".p4.Eta()",
+                        'plot_cut': self.totalCut,
+                        'binning': '(50, -4, 4)'
+                },
+                {
+                        'name': 'jet1_eta_%s_%s_%s%s'%(self.llFlav, self.suffix, self.extraString, self.systematicString),
+                        'variable': self.jet1_str+".p4.Eta()",
+                        'plot_cut': self.totalCut,
+                        'binning': '(50, -4, 4)'
+                },
+                {
+                        'name': 'jet2_eta_%s_%s_%s%s'%(self.llFlav, self.suffix, self.extraString, self.systematicString),
+                        'variable': self.jet2_str+".p4.Eta()",
+                        'plot_cut': self.totalCut,
+                        'binning': '(50, -4, 4)'
+                },
+				{
+                        'name': 'lep1_phi_%s_%s_%s%s'%(self.llFlav, self.suffix, self.extraString, self.systematicString),
+                        'variable': self.lep1_str+".p4.Phi()",
+                        'plot_cut': self.totalCut,
+                        'binning': '(50, -4, 4)'
+                },
+                {
+                        'name': 'lep2_phi_%s_%s_%s%s'%(self.llFlav, self.suffix, self.extraString, self.systematicString),
+                        'variable': self.lep2_str+".p4.Phi()",
+                        'plot_cut': self.totalCut,
+                        'binning': '(50, -4, 4)'
+                },
+                {
+                        'name': 'jet1_phi_%s_%s_%s%s'%(self.llFlav, self.suffix, self.extraString, self.systematicString),
+                        'variable': self.jet1_str+".p4.Phi()",
+                        'plot_cut': self.totalCut,
+                        'binning': '(50, -4, 4)'
+                },
+                {
+                        'name': 'jet2_phi_%s_%s_%s%s'%(self.llFlav, self.suffix, self.extraString, self.systematicString),
+                        'variable': self.jet2_str+".p4.Phi()",
+                        'plot_cut': self.totalCut,
+                        'binning': '(50, -4, 4)'
+                },
+                #{
+                #        'name': 'ht_%s_%s_%s%s'%(self.llFlav, self.suffix, self.extraString, self.systematicString),
+                #        'variable': self.prefix + "HT",
+                #        'plot_cut': self.totalCut,
+                #        'binning': '(50, 65, 1500)'
+                #},
                 #{
                 #        'name': 'llmetjj_MT2_%s_%s_%s%s'%(self.llFlav, self.suffix, self.extraString, self.systematicString),
                 #        'variable': self.baseObject+".MT2",
@@ -367,7 +402,7 @@ class BasePlotter:
                         'name': 'llbb_M_%s_%s_%s%s'%(self.llFlav, self.suffix, self.extraString, self.systematicString),
                         'variable': "(" + self.ll_str + "+" + self.jj_str + ").M()",
                         'plot_cut': self.totalCut,
-                        'binning': '(50, 200, 350)'
+                        'binning': '(50, 100, 1500)'
                 },
                 {
                         'name': 'll_M_%s_%s_%s%s'%(self.llFlav, self.suffix, self.extraString, self.systematicString),
@@ -398,7 +433,19 @@ class BasePlotter:
                         'variable': self.jj_str+".Pt()",
                         'plot_cut': self.totalCut,
                         'binning': '(50, 0, 450)'
-                } 
+                },
+				{
+				        'name': 'll_DPhi_l_l_%s_%s_%s%s'%(self.llFlav, self.suffix, self.extraString, self.systematicString),
+						'variable': "abs("+self.baseObject+".DPhi_l_l)",
+						'plot_cut': self.totalCut,
+						'binning': '(50, 0, 3.1416)'
+				},
+				{
+				        'name': 'jj_DPhi_j_j_%s_%s_%s%s'%(self.llFlav, self.suffix, self.extraString, self.systematicString),
+						'variable': "abs("+self.baseObject+".DPhi_j_j)",
+						'plot_cut': self.totalCut,
+						'binning': '(50, 0, 3.1416)'
+				}
             ])
             
             self.csv_plot.extend([

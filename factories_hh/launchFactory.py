@@ -128,9 +128,9 @@ class Configuration:
 
 # General plots
 MainPlots_ForMC = Configuration('generatePlots.py', workflow='plot_main', suffix='_for_MCbkg',  mode='plots', samples=[
-             "DY_LO"
+#             "DY_LO"
 #            "Main_Training",
-#            "DY_NLO",
+            "DY_NLO",
 #            "Higgs",
 #            "VV_VVV",
 #            "Top_Other",
@@ -140,8 +140,8 @@ MainPlots_ForMC = Configuration('generatePlots.py', workflow='plot_main', suffix
             'lljj_plots': ['basic'],
             'llbb_plots': ['basic'],
             'syst': False,
-            'llbb_stages': ['mll_cut', 'inverted_mll_cut', 'mll_peak'],
-            'lljj_stages': ['mll_cut', 'no_cut'],
+            'llbb_stages': ['no_cut'],
+            'lljj_stages': ['no_cut'],
         })
 #MainPlots_ForData = Configuration('generatePlots.py', workflow='plot_main', suffix='_for_data', mode='plots', samples=['Data'], generation_args={
 #            'sample_type': 'Data',
@@ -155,7 +155,7 @@ MainPlots_ForSignal = Configuration('generatePlots.py', workflow='plot_main', su
             'sample_type': 'Signal',
             'llbb_plots': ['basic'],
             'syst': False,
-            'llbb_stages': ['mll_cut', 'inverted_mll_cut', 'mll_peak'],
+            'llbb_stages': ['no_cut'],
         })
 
 """

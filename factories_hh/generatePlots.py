@@ -50,9 +50,9 @@ use_syst = get_cfg('syst')
 
 lljj_categories = get_cfg('lljj_categories', ['MuMu', 'ElEl'])
 llbb_categories = get_cfg('llbb_categories', ['MuMu', 'ElEl'])
-# USE ONLY THE CUT TO ISOLATE THE Z PEAK 
-lljj_stages = get_cfg('lljj_stages', ['no_cut', 'mll_peak'])
-llbb_stages = get_cfg('llbb_stages', ['no_cut', 'mll_peak'])
+# DON'T USE ANY CUT, YOU DON'T NEED IT 
+lljj_stages = get_cfg('lljj_stages', ['no_cut'])
+llbb_stages = get_cfg('llbb_stages', ['no_cut'])
 lljj_plot_families = get_cfg('lljj_plots', [])
 llbb_plot_families = get_cfg('llbb_plots', [])
 
@@ -81,7 +81,7 @@ weights_lljj = ['trigeff']
 
 plots_lljj = []
 if "basic" in lljj_plot_families:
-    plots_lljj += ["mjj"]
+    plots_lljj += ["mjj", "basic"]
 if "other" in lljj_plot_families:
     plots_lljj += ["other"]
 if "btag_efficiencies" in lljj_plot_families:
@@ -93,7 +93,7 @@ weights_llbb = ['trigeff']
 
 plots_llbb = []
 if "basic" in llbb_plot_families:
-    plots_llbb += ["mjj"]
+    plots_llbb += ["mjj", "basic"]
 if "other" in llbb_plot_families:
     plots_llbb += ["other"]
 if "weights" in llbb_plot_families:

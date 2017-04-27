@@ -23,24 +23,28 @@ if not os.path.exists(args.directory):
     parser.error("%r does not exists" % args.directory)
 
 rootDir = args.directory
-condorDir = os.path.join(rootDir, "condor/output")
+slurmDir = os.path.join(rootDir, "slurm/output")
 
-# Find a ROOT file in condor output directory
-root_files = glob.glob(os.path.join(condorDir, "*.root"))
+# Find a ROOT file in slurm output directory
+root_files = glob.glob(os.path.join(slurmDir, "*.root"))
 if len(root_files) == 0:
-    raise Exception("No ROOT files found in %r" % condorDir)
+    raise Exception("No ROOT files found in %r" % slurmDir)
+else:
+    print len(root_files)
 
 fileName = ""
 for file in root_files:
-    if "dy" not in os.path.basename(file).lower() and "HHTo2B2VTo2L2Nu" not in file:
-        fileName = file
-        break
+#if "dy" not in os.path.basename(file).lower() and "HHTo2B2VTo2L2Nu" not in file:
+    fileName = file
+    #    break
 
 print("Listing histograms found in %r" % fileName)
 
-if args.unblinded:
-    print("WARNING -- PRODUCING UNBLINDED PLOTS")
+#if args.unblinded:
+#    print("WARNING -- PRODUCING UNBLINDED PLOTS")
 
+print "OPENING THE FOLLOWING FILE:"
+print fileName
 file = TFile.Open(fileName) 
 keys = file.GetListOfKeys() 
 alreadyIn = []
@@ -50,9 +54,11 @@ alreadyIn = []
 with open('hh_plotter_all.yml.tpl') as tpl_handle:
     tpl = tpl_handle.read()
     if args.lljj:
-        tpl = tpl.format(files="['MCFiles.yml', 'DY_MCFiles.yml', 'DataFiles.yml']", legend="position: [0.61, 0.61, 0.94, 0.89]")
+        #tpl = tpl.format(files="['MCFiles.yml', 'DY_MCFiles.yml', 'DataFiles.yml']", legend="position: [0.61, 0.61, 0.94, 0.89]")
+        tpl = tpl.format(files="['DY_MCFiles.yml']", legend="position: [0.61, 0.61, 0.94, 0.89]")
     if args.llbb:
-        tpl = tpl.format(files="['MCFiles.yml', 'DY_estFromData.yml', 'DataFiles.yml', 'SignalFiles.yml']", legend="include: ['legendPosition.yml']")
+        #tpl = tpl.format(files="['MCFiles.yml', 'DY_estFromData.yml', 'DataFiles.yml', 'SignalFiles.yml']", legend="include: ['legendPosition.yml']")
+        tpl = tpl.format(files="['DY_MCFiles.yml', 'SignalFiles.yml']", legend="include: ['legendPosition.yml']")
     with open('hh_plotter_all.yml', 'w') as f:
         f.write(tpl)
 
@@ -60,7 +66,7 @@ with open('hh_plotter_all.yml.tpl') as tpl_handle:
 # Configure root directory
 with open('centralConfig.yml.tpl') as tpl_handle:
     tpl = tpl_handle.read()
-    tpl = tpl.format(root=condorDir)
+    tpl = tpl.format(root=slurmDir)
     with open('centralConfig.yml', 'w') as f:
         f.write(tpl)
 
